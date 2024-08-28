@@ -157,6 +157,12 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # django-cors-headers settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only. Set to specific origins in production.
+CORS_ALLOW_CREDENTIALS = True
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 # Django REST Framework settings
 REST_FRAMEWORK = {

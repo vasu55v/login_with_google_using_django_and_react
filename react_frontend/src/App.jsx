@@ -1,33 +1,61 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import axios from 'axios';
 
 function App() {
-  const [count, setCount] = useState(0)
+   const [user,setUser]=useState(null);
+
+   const responseGoogle=(credentialResponse)=>{
+    console.log(credentialResponse)
+    axios.post('http://localhost:8000/app_api/google/', {
+      access_token: credentialResponse.credential  // Changed from response.accessToken
+    })
+    .then((res)=>{
+      localStorage.setItem('token',res.data.key);
+      fetchUserDetails();
+    })
+    .catch(err => console.log(err));
+
+   }
+
+   const fetchUserDetails = () => {
+    axios.get('http://localhost:8000/app_api/user/', {
+      headers: {
+        Authorization: `Token ${localStorage.getItem('token')}`
+      }
+    })
+    .then(res => {
+      setUser(res.data);
+    })
+    .catch(err => console.log(err));
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+  <GoogleOAuthProvider clientId="1024231533476-0295mbkr490ogv7m07he4ndm4eflka5m.apps.googleusercontent.com">
+
+    <div className='container'>
+      <h1>Google login example.</h1>
+      {!user ?(
+        <GoogleLogin
+        onSuccess={responseGoogle}
+        onError={() => {
+          console.log('Login Failed');
+        }}
+        // cookiePolicy={'single_host_origin'}
+        />
+
+      ):(
+        <div>
+          <h2>Welcome, {user.username}!</h2>
+          <p>Email: {user.email}</p>
+        </div>
+      )}
+    </div>
+    </GoogleOAuthProvider>
+
     </>
   )
 }
